@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Union
 
 import dtw
-import gym
+import gymnasium as gym
 import numpy as np
 from inquire.environments.environment import Environment
 from inquire.utils.datatypes import CachedSamples, Range, Trajectory
@@ -17,7 +17,7 @@ class LunarLander(Environment):
 
     def __init__(
         self,
-        name: str = "LunarLanderContinuous-v2",
+        name: str = "LunarLanderContinuous-v3",
         seed: int = None,
         timesteps: int = 450,
         frame_delay_ms: int = 20,
@@ -119,7 +119,7 @@ class LunarLander(Environment):
         LunarLander environment's state; it does NOT re-seed a random number
         generator.
         """
-        state = self.env.reset(seed=self.seed)
+        state, info = self.env.reset(seed=self.seed)
         return state
 
     def trajectory_rollout(
@@ -290,7 +290,7 @@ class LunarLander(Environment):
         for i in range(len(trajectory.actions)):
             self.env.render()
             a = trajectory.actions[i]
-            observation, reward, done, info = self.env.step(a)
+            obs, reward, done, truncated, info = self.env.step(a)
             time.sleep(frame_delay_ms / 1000)
             if done:
                 break
