@@ -22,6 +22,7 @@ def get_data(
         file = Path(file)
         try:
             df = pd.read_csv(path / file)
+            df.columns = df.columns.map(str) 
             return df, file
         except:
             print(f"Couldn't read from {str(path / file)}")
@@ -31,7 +32,9 @@ def get_data(
         if combine_into_file:
             for f in files:
                 try:
-                    df = pd.concat([df, pd.read_csv(f)], ignore_index=True)
+                    _df = pd.read_csv(f)
+                    _df.columns = _df.columns.map(str)  # <--- ADD THIS LINE
+                    df = pd.concat([df, _df], ignore_index=True)
                 except:
                     print(f"Couldn't read from {str(f)}")
             return df, files
@@ -39,7 +42,9 @@ def get_data(
             dataframes = []
             for f in files:
                 try:
-                    dataframes.append(pd.read_csv(f))
+                    _df = pd.read_csv(f)
+                    _df.columns = _df.columns.map(str)  # <--- ADD THIS LINE
+                    dataframes.append(_df)
                 except:
                     print(f"Couldn't read from {str(f)}")
             return dataframes, files.astype(str)
@@ -135,7 +140,7 @@ def plot_data(inputs: dict) -> None:
                 return generate_plot(
                     plot_type=plot_type,
                     directory=inputs["directory"],
-                    file=inputs["file"],
+                    file=inputs.get("file", None),
                     title=inputs["title"],
                     save=inputs["save"],
                     show_plot=inputs["show_plot"],
@@ -156,7 +161,7 @@ def plot_data(inputs: dict) -> None:
                 return generate_plot(
                     plot_type=plot_type,
                     directory=inputs["directory"],
-                    file=inputs["file"],
+                    file=inputs.get("file", None),
                     save=inputs["save"],
                     show_plot=inputs["show_plot"],
                     x_axis_label = x_axis,
@@ -296,15 +301,17 @@ def generate_plot(
         )
         data_dict[filtered_file_names[i]] = data_dict[original_name]
     fig = go.Figure()
-    if plot_type == "cost":
-        query_count = '200'
-    else:
-        query_count = '20'
-    x_axis = np.arange(int(query_count) + 1)
     colors = px.colors.sequential.Viridis
     auc_dict = dict()
     for i, filename in enumerate(filtered_file_names):
         df = data_dict[filename]
+        # Find the maximum query column
+        query_cols = [c for c in df.columns if c.isdigit()]
+        if len(query_cols) == 0:
+            raise ValueError("No query columns found in DataFrame!")
+        max_query = max(map(int, query_cols))
+        query_count = str(max_query)
+        x_axis = np.arange(int(query_count) + 1)
         agents = df["agent"].unique()
         tasks = df["task"].unique()
         for agent in agents:
@@ -324,7 +331,7 @@ def generate_plot(
                         y=b.mean(),
                         error_y=dict(type="data", array=b.var().values, thickness=7),
                         visible=True,
-                        name=full_name[filtered_file_names[i].split("--")[0].lower()],
+                        name=full_name.get(filtered_file_names[i].split("--")[0].lower(), filtered_file_names[i]),
                         line_width=10,
                         marker_color=colors[color_idx],
                         marker=dict(

@@ -424,6 +424,7 @@ class ArgsHandler:
                     use_numba=use_numba,
                 )
             ]
+            print("COSTS PASSED TO AGENT:", agents[0].costs)
             agent_names = ["INQUIRE"]
         elif self._args.agent_name == "no-demos":
             from inquire.agents.inquire import Inquire
