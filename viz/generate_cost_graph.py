@@ -41,12 +41,12 @@ def main():
                     prefix = "--" + static_name + domain + "_alpha-0.001_"
                 else:
                     prefix = "--" + static_name + domain + "_alpha-0.005_"
-                p = Path(directory + t + prefix + "distance.csv")
+                p = Path("output/LunarLander/" + "LunarLander_08:06:07:40_performance.csv")
                 if p.is_file():
-                    main_data = get_data(file=t+prefix+"distance.csv", directory=directory)[0]
-                    query_data = get_data(file=t+prefix+"query_types.csv", directory=directory)[0]
+                    main_data = get_data("LunarLander_08:06:07:40_distance.csv", directory="output/LunarLander/")[0]
+                    query_data = get_data("LunarLander_08:06:07:40_query_types.csv", directory="output/LunarLander/")[0]
                     converted_data = convert_x_to_cost_axis(main_data, query_data, costs)
-                    converted_data.to_csv(directory + t + prefix + "cost.csv")
+                    converted_data.to_csv("output/LunarLander/" + "cost.csv")
 
 if __name__ == "__main__":
     main()

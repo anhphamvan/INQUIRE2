@@ -399,10 +399,14 @@ class ArgsHandler:
                 )
             ]
             agent_names = ["DEMPREF"]
-        if self._args.cost_vals is None:
-            costs = None
-        else:
-            costs = eval(self._args.cost_vals)
+        # if self._args.cost_vals is None:
+        #     costs = None
+        # else:
+        costs = eval(self._args.cost_vals)
+        if all(isinstance(k, str) for k in costs):
+            # Map string keys to enum
+            str_to_modality = {mod.name.lower(): mod for mod in Modality}
+            costs = {str_to_modality[k.lower()]: v for k, v in costs.items()}
         use_numba = self._args.use_numba
         if self._args.agent_name == "inquire":
             from inquire.agents.inquire import Inquire
@@ -424,7 +428,7 @@ class ArgsHandler:
                     use_numba=use_numba,
                 )
             ]
-            print("COSTS PASSED TO AGENT:", agents[0].costs)
+
             agent_names = ["INQUIRE"]
         elif self._args.agent_name == "no-demos":
             from inquire.agents.inquire import Inquire

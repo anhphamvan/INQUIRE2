@@ -55,7 +55,7 @@ if __name__ == "__main__":
             "approximate_overlap_last_to_all",
             "avg_magnitude_last_to_all"
         ]
-        domain = Pizza(
+        domain = PizzaMaking(
             max_topping_count=max_topping_count,
             optimization_iteration_count=500, #  optimization_iteration_count,
             pizza_form=pizza_form,

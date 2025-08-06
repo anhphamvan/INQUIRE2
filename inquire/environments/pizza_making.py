@@ -104,11 +104,11 @@ class PizzaMaking(Environment):
             elif b == "avg_magnitude_last_to_all":
                 basis_fn_memory_blocks.append(self.avg_magnitude_last_to_all)
             elif b == "dist_0_quadratic":
-                basis_fn_memory_blocks.append(dist_0_quadratic)
+                basis_fn_memory_blocks.append(self.dist_0_quadratic)
             elif b == "dist_2_quadratic":
-                basis_fn_memory_blocks.append(dist_2_quadratic)
+                basis_fn_memory_blocks.append(self.dist_2_quadratic)
             elif b == "dist_4_quadratic":
-                basis_fn_memory_blocks.append(dist_4_quadratic)
+                basis_fn_memory_blocks.append(self.dist_4_quadratic)
             elif b == "distance_to_nearest_neighbor":
                 basis_fn_memory_blocks.append(
                     self.distance_to_nearest_neighbor
@@ -118,9 +118,9 @@ class PizzaMaking(Environment):
             elif b == "markovian_magnitude":
                 basis_fn_memory_blocks.append(self.markovian_magnitude)
             elif b == "x_coordinate":
-                basis_fn_memory_blocks.append(x_coordinate)
+                basis_fn_memory_blocks.append(self.x_coordinate)
             elif b == "y_coordinate":
-                basis_fn_memory_blocks.append(y_coordinate)
+                basis_fn_memory_blocks.append(self.y_coordinate)
 
         # The feature function is a composition of the basis functions:
 
@@ -415,20 +415,22 @@ class PizzaMaking(Environment):
 
         return direction_in_degrees
 
-    def x_coordinate(self, state: Union[list, np.ndarray]) -> float:
+    def x_coordinate(self, radius, state: Union[list, np.ndarray]) -> float:
         """Identify the x-coordinate of the last topping."""
         # If there are no toppings, return 0:
+        radius = self._viable_surface_radius
         if state.shape[1] < 1:
             return 0
-        x_coord = state[0, -1] / self._viable_surface_radius
+        x_coord = state[0, -1] / radius
         return x_coord
 
-    def y_coordinate(self, state: Union[list, np.ndarray]) -> float:
+    def y_coordinate(self, radius, state: Union[list, np.ndarray]) -> float:
         """Identify the y-coordinate of the last topping."""
         # If there are no toppings, return 0:
+        radius = self._viable_surface_radius
         if state.shape[1] < 1:
             return 0
-        y_coord = state[1, -1] / self._viable_surface_radius
+        y_coord = state[1, -1] / radius
         return y_coord
 
     def distance_to_nearest_neighbor(
@@ -453,39 +455,42 @@ class PizzaMaking(Environment):
             nearest = mags.min()
         return nearest
 
-    def dist_0_quadratic(self, state: Union[list, np.ndarray]) -> float:
+    def dist_0_quadratic(self, radius, state: Union[list, np.ndarray]) -> float:
         """Compute how close the distance between_toppings is to 0."""
+        radius = self._viable_surface_radius
         coords = np.array(state, copy=True)
         # If there are no toppings or just one, return 0:
         if coords.shape[1] <= 1:
             return 0
         dist = self.distance_to_nearest_neighbor(coords, normalize=False)
-        max_diff = self._viable_surface_radius * 2
+        max_diff = radius * 2
         quad = np.abs(dist - 0) / max_diff
         return quad
 
-    def dist_2_quadratic(self, state: Union[list, np.ndarray]) -> float:
+    def dist_2_quadratic(self, radius, state: Union[list, np.ndarray]) -> float:
         """Compute how close the distance between_toppings is to 2.
 
         NOT in use.
         """
+        radius = self._viable_surface_radius
         coords = np.array(state, copy=True)
         # If there are no toppings or just one, return 0:
         if coords.shape[1] <= 1:
             return 0
         dist = self.distance_to_nearest_neighbor(coords, normalize=False)
-        max_diff = self._viable_surface_radius * 2 - 2
+        max_diff = radius * 2 - 2
         quad = np.abs(dist - 2) / max_diff
         return quad
 
-    def dist_4_quadratic(self, state: Union[list, np.ndarray]) -> float:
+    def dist_4_quadratic(self, radius, state: Union[list, np.ndarray]) -> float:
         """Compute how close the distance between_toppings is to 4."""
+        radius = self._viable_surface_radius
         coords = np.array(state, copy=True)
         # If there are no toppings or just one, return 0:
         if coords.shape[1] <= 1:
             return 0
         dist = self.distance_to_nearest_neighbor(coords, normalize=False)
-        max_diff = self._viable_surface_radius * 2 - 4
+        max_diff = radius * 2 - 4
         quad = np.abs(dist - 4) / max_diff
         return quad
 
@@ -669,8 +674,8 @@ framework should need to be modified to accommodate these functions.
 
 """
 
-'''
-@jit(nopython=True)
+
+# @jit(nopython=True)
 def generate_2D_points(radius: float, count: int) -> np.ndarray:
     """Uniformly sample points from a circle."""
     pts = np.empty((2, count))
@@ -682,7 +687,7 @@ def generate_2D_points(radius: float, count: int) -> np.ndarray:
         pts[:, i] = np.array([x, y])
     return pts
 
-
+'''
 @jit(nopython=True)
 def x_coordinate(radius: float, state: Union[list, np.ndarray]) -> float:
     """Identify the x-coordinate of the last topping."""
